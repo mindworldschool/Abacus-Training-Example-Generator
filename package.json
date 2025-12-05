@@ -1,0 +1,30 @@
+{
+  "name": "abacus-mental-trainer",
+  "version": "1.0.0",
+  "description": "Mental arithmetic trainer with abacus visualization",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint . --ext .js",
+    "lint:fix": "eslint . --ext .js --fix",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "serve": "python3 -m http.server 8000"
+  },
+  "keywords": [
+    "abacus",
+    "mental-arithmetic",
+    "education",
+    "math-trainer"
+  ],
+  "author": "MindWorld School",
+  "license": "MIT",
+  "devDependencies": {
+    "vite": "^5.0.12",
+    "eslint": "^8.56.0",
+    "vitest": "^1.2.2",
+    "@vitest/ui": "^1.2.2"
+  }
+}
