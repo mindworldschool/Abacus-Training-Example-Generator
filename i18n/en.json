@@ -1,0 +1,109 @@
+{
+  "language": "English",
+  "header": {
+    "titleMain": "Mind Abacus",
+    "titleSub": "Think fast. Count smart.",
+    "tagline": "Mental arithmetic trainer",
+    "steps": {
+      "settings": "Settings",
+      "confirmation": "Confirmation",
+      "game": "Training",
+      "results": "Results"
+    }
+  },
+  "footer": "MindWorld School © 2025",
+  "buttons": {
+    "back": "Back",
+    "continue": "Continue",
+    "start": "Start training",
+    "finish": "Finish",
+    "new": "New setup"
+  },
+  "settings": {
+    "title": "Training setup",
+    "description": "Choose how you want to practice today.",
+    "modeLabel": "Mode",
+    "modeOptions": [
+      { "value": "abacus", "label": "On an abacus" },
+      { "value": "mental", "label": "Mentally" }
+    ],
+    "digitsLabel": "Number range",
+    "digitsOptions": [
+      { "value": "1", "label": "One-digit" },
+      { "value": "2", "label": "Two-digit" },
+      { "value": "3", "label": "Three-digit" }
+    ],
+    "speedLabel": "Tempo",
+    "speedOptions": [
+      { "value": "slow", "label": "Slow" },
+      { "value": "standard", "label": "Standard" },
+      { "value": "fast", "label": "Fast" }
+    ],
+    "roundsLabel": "Examples",
+    "roundsHint": "10 examples per session is a good warm-up.",
+    "dictationLabel": "Enable voice dictation",
+    "dictationHint": "Plays numbers aloud during the run.",
+    "submit": "Continue"
+  },
+  "confirmation": {
+    "title": "Review your setup",
+    "description": "Make sure the session parameters look right before starting.",
+    "list": {
+      "mode": "Mode",
+      "digits": "Number range",
+      "speed": "Tempo",
+      "rounds": "Examples",
+      "dictation": "Dictation"
+    },
+    "dictation": {
+      "on": "Enabled",
+      "off": "Disabled"
+    }
+  },
+  "game": {
+    "title": "Training session",
+    "description": "Solve the examples and press finish when you are done.",
+    "helper": "10 examples per run. Track your rhythm!",
+    "cta": "Finish session"
+  },
+  "results": {
+    "title": "Session results",
+    "description": "Here is how the attempt went.",
+    "success": "Correct",
+    "mistakes": "Mistakes",
+    "cta": "Start new setup",
+    "retryErrors": "Retry errors"
+  },
+  "timer": {
+  "out": "Time is up!",
+  "left": "{seconds} seconds left",
+  "paused": "Timer paused",
+  "continue": "Continue"
+},
+"answer": {
+  "enterNumber": "Please enter a number",
+  "correct": "Correct answer: {value}",
+  "wrong": "Wrong answer",
+  "timeUp": "Time is up. Correct answer: {value}"
+},
+"dictation": {
+  "enabled": "Dictation mode enabled",
+  "showing": "Showing numbers one by one",
+  "finished": "Dictation finished"
+},
+"progress": {
+  "examples": "Examples",
+  "correct": "Correct",
+  "mistakes": "Mistakes"
+},
+"trainer": {
+  "answerLabel": "Answer:",
+  "submitButton": "Submit",
+  "showAbacus": "🧮 Show Abacus",
+  "hideAbacus": "🧮 Hide Abacus",
+  "pleaseEnterNumber": "Please enter a number",
+  "correctLabel": "Correct: ",
+  "incorrectLabel": "Mistakes: "
+}
+}
+
