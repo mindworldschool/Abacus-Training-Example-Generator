@@ -5,6 +5,9 @@ import { PrintGenerator } from "../print/PrintGenerator.js";
 import { PrintFormatter } from "../print/PrintFormatter.js";
 import { getTranslations } from "../i18n/translations.js";
 
+// Глобальная переменная для хранения текущего языка
+let currentLanguage = 'uk';
+
 /**
  * Главная функция рендеринга экрана генератора
  * @param {HTMLElement} container - Контейнер для рендера
@@ -12,8 +15,8 @@ import { getTranslations } from "../i18n/translations.js";
 export function renderPrintScreen(container) {
   console.log("🖨️ Рендеринг экрана генератора печатных заданий");
 
-  // Получаем переводы (по умолчанию украинский)
-  const t = getTranslations('uk');
+  // Получаем переводы для текущего языка
+  const t = getTranslations(currentLanguage);
 
   // Очищаем контейнер
   container.innerHTML = '';
@@ -23,7 +26,7 @@ export function renderPrintScreen(container) {
   screen.className = 'print-screen';
 
   // === ЗАГОЛОВОК ===
-  const header = createHeader(t);
+  const header = createHeader(t, container);
   screen.appendChild(header);
 
   // === НАСТРОЙКИ ===
@@ -41,20 +44,64 @@ export function renderPrintScreen(container) {
 }
 
 /**
- * Создание заголовка
+ * Создание заголовка с переключателем языков
  */
-function createHeader(t) {
+function createHeader(t, container) {
   const header = document.createElement('div');
   header.className = 'print-header';
 
+  // Контейнер для заголовка и языкового переключателя
+  const headerTop = document.createElement('div');
+  headerTop.style.display = 'flex';
+  headerTop.style.justifyContent = 'space-between';
+  headerTop.style.alignItems = 'center';
+
+  const titleBlock = document.createElement('div');
+
   const title = document.createElement('h1');
   title.textContent = t.title;
-  header.appendChild(title);
+  titleBlock.appendChild(title);
 
   const subtitle = document.createElement('p');
   subtitle.className = 'print-subtitle';
   subtitle.textContent = t.subtitle;
-  header.appendChild(subtitle);
+  titleBlock.appendChild(subtitle);
+
+  headerTop.appendChild(titleBlock);
+
+  // Переключатель языков
+  const langSelector = document.createElement('select');
+  langSelector.className = 'language-selector';
+  langSelector.style.padding = '8px 12px';
+  langSelector.style.fontSize = '14px';
+  langSelector.style.border = '1px solid #ccc';
+  langSelector.style.borderRadius = '4px';
+  langSelector.style.cursor = 'pointer';
+
+  const languages = [
+    { code: 'uk', name: '🇺🇦 Українська' },
+    { code: 'ru', name: '🇷🇺 Русский' },
+    { code: 'en', name: '🇬🇧 English' },
+    { code: 'es', name: '🇪🇸 Español' }
+  ];
+
+  languages.forEach(lang => {
+    const option = document.createElement('option');
+    option.value = lang.code;
+    option.textContent = lang.name;
+    if (lang.code === currentLanguage) {
+      option.selected = true;
+    }
+    langSelector.appendChild(option);
+  });
+
+  langSelector.onchange = (e) => {
+    currentLanguage = e.target.value;
+    renderPrintScreen(container);
+  };
+
+  headerTop.appendChild(langSelector);
+  header.appendChild(headerTop);
 
   return header;
 }
@@ -98,10 +145,15 @@ function createSettingsSection(t) {
     'digitCount',
     t.settings.digitCount,
     [
-      { value: 1, label: t.digits[1] },
-      { value: 2, label: t.digits[2] },
-      { value: 3, label: t.digits[3] },
-      { value: 4, label: t.digits[4] }
+      { value: 1, label: t.digits[1] || '1 розряд' },
+      { value: 2, label: t.digits[2] || '2 розряди' },
+      { value: 3, label: t.digits[3] || '3 розряди' },
+      { value: 4, label: t.digits[4] || '4 розряди' },
+      { value: 5, label: t.digits[5] || '5 розрядів' },
+      { value: 6, label: t.digits[6] || '6 розрядів' },
+      { value: 7, label: t.digits[7] || '7 розрядів' },
+      { value: 8, label: t.digits[8] || '8 розрядів' },
+      { value: 9, label: t.digits[9] || '9 розрядів' }
     ],
     1
   ));
@@ -418,10 +470,10 @@ function createResultSection(t) {
   h2.textContent = t.result.title;
   section.appendChild(h2);
 
-  // Контейнер для статистики
-  const statsContainer = document.createElement('div');
-  statsContainer.id = 'statistics-container';
-  section.appendChild(statsContainer);
+  // Контейнер для статистики (ОТКЛЮЧЕНО по требованию)
+  // const statsContainer = document.createElement('div');
+  // statsContainer.id = 'statistics-container';
+  // section.appendChild(statsContainer);
 
   // Контейнер для превью листа
   const previewContainer = document.createElement('div');
@@ -642,10 +694,10 @@ function displayResults(examples, settings, t) {
   const resultSection = document.getElementById('resultSection');
   resultSection.style.display = 'block';
 
-  // === СТАТИСТИКА ===
-  const statsContainer = document.getElementById('statistics-container');
-  const statsHtml = PrintFormatter.formatStatisticsBlock(examples);
-  statsContainer.innerHTML = statsHtml;
+  // === СТАТИСТИКА === (ОТКЛЮЧЕНО по требованию)
+  // const statsContainer = document.getElementById('statistics-container');
+  // const statsHtml = PrintFormatter.formatStatisticsBlock(examples);
+  // statsContainer.innerHTML = statsHtml;
 
   // === ПРЕВЬЮ ЛИСТА ===
   const previewContainer = document.getElementById('worksheet-preview');
@@ -654,15 +706,33 @@ function displayResults(examples, settings, t) {
 
   const showAnswers = document.getElementById('showAnswersCheck').checked;
 
+  // Лист с примерами (без ответов)
   const worksheetHtml = PrintFormatter.formatToTable(examples, {
-    showAnswers: showAnswers,
+    showAnswers: false,  // Ответы НЕ показываем в примерах
     title: title,
     comment: comment,
     columns: 10,
     rows: Math.ceil(examples.length / 10)
   });
 
-  previewContainer.innerHTML = worksheetHtml;
+  let fullHtml = worksheetHtml;
+
+  // Если нужно показать ответы - добавляем отдельный лист
+  if (showAnswers) {
+    // Добавляем разрыв страницы
+    fullHtml += '<div class="page-break" style="page-break-after: always; margin: 40px 0; border-top: 2px dashed #ccc;"></div>';
+
+    // Добавляем лист с ответами
+    const answersHtml = PrintFormatter.formatAnswersSheet(examples, {
+      title: t.result?.answersTitle || "Відповіді",
+      columns: 10,
+      rows: Math.ceil(examples.length / 10)
+    });
+
+    fullHtml += answersHtml;
+  }
+
+  previewContainer.innerHTML = fullHtml;
 
   // Сохраняем примеры для переключения ответов
   window.currentExamples = examples;
@@ -680,13 +750,31 @@ function toggleAnswers(showAnswers) {
   const title = window.currentSettings.worksheetTitle || window.currentTranslations.worksheet.defaultTitle;
   const comment = window.currentSettings.worksheetComment || '';
 
+  // Лист с примерами (без ответов)
   const worksheetHtml = PrintFormatter.formatToTable(window.currentExamples, {
-    showAnswers: showAnswers,
+    showAnswers: false,  // Ответы НЕ показываем в примерах
     title: title,
     comment: comment,
     columns: 10,
     rows: Math.ceil(window.currentExamples.length / 10)
   });
 
-  previewContainer.innerHTML = worksheetHtml;
+  let fullHtml = worksheetHtml;
+
+  // Если нужно показать ответы - добавляем отдельный лист
+  if (showAnswers) {
+    // Добавляем разрыв страницы
+    fullHtml += '<div class="page-break" style="page-break-after: always; margin: 40px 0; border-top: 2px dashed #ccc;"></div>';
+
+    // Добавляем лист с ответами
+    const answersHtml = PrintFormatter.formatAnswersSheet(window.currentExamples, {
+      title: window.currentTranslations.result?.answersTitle || "Відповіді",
+      columns: 10,
+      rows: Math.ceil(window.currentExamples.length / 10)
+    });
+
+    fullHtml += answersHtml;
+  }
+
+  previewContainer.innerHTML = fullHtml;
 }

@@ -91,7 +91,8 @@
   position: relative;
 }
 
-.answer-line::before {
+/* ОТКЛЮЧЕНО по требованию: убрать символ = */
+/* .answer-line::before {
   content: '=';
   position: absolute;
   left: 50%;
@@ -99,7 +100,7 @@
   top: -25px;
   font-size: 18px;
   font-weight: bold;
-}
+} */
 
 /* Ответ */
 .answer-value {

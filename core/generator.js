@@ -137,7 +137,7 @@ export function generateExample(settings = {}) {
         onlySubtraction: blocks?.mix?.onlySubtraction ?? false,
         minSteps: minSteps,
         maxSteps: maxSteps,
-        digitCount: 1,
+        digitCount: digitCount,  // ИСПРАВЛЕНО: передаем реальную разрядность
         combineLevels: combineLevels,
         blocks: blocks
       };
@@ -161,7 +161,7 @@ export function generateExample(settings = {}) {
         onlySubtraction: blocks?.friends?.onlySubtraction ?? false,
         minSteps: minSteps,
         maxSteps: maxSteps,
-        digitCount: 1,
+        digitCount: digitCount,  // ИСПРАВЛЕНО: передаем реальную разрядность
         combineLevels: combineLevels,
         blocks: blocks
       };
@@ -185,7 +185,7 @@ export function generateExample(settings = {}) {
         onlySubtraction: blocks?.brothers?.onlySubtraction ?? false,
         minSteps: minSteps,
         maxSteps: maxSteps,
-        digitCount: 1,
+        digitCount: digitCount,  // ИСПРАВЛЕНО: передаем реальную разрядность
         combineLevels: combineLevels,
         blocks: blocks
       };
@@ -211,7 +211,7 @@ export function generateExample(settings = {}) {
         onlySubtraction: blocks?.simple?.onlySubtraction ?? false,
         minSteps: minSteps,
         maxSteps: maxSteps,
-        digitCount: 1,
+        digitCount: digitCount,  // ИСПРАВЛЕНО: передаем реальную разрядность
         combineLevels: combineLevels
       };
     }
