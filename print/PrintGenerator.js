@@ -181,7 +181,7 @@ export class PrintGenerator {
 
     // Генерируем простой пример с базовыми операциями
     const steps = [];
-    const actionsCount = Math.min(3, this.config.actionsCount);
+    const actionsCount = this.config.actionsCount;
 
     for (let i = 0; i < actionsCount; i++) {
       const action = i === 0 ? '+1' : (i % 2 === 0 ? '+2' : '-1');
