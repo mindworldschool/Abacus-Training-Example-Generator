@@ -1,4 +1,4 @@
-// ext/core/rules/BaseRule.js - Базовое правило для генерации примеров
+// core/rules/BaseRule.js - Базовое правило для генерации примеров
 
 /**
  * BaseRule - абстрактный базовый класс для всех правил генерации примеров.
@@ -33,255 +33,230 @@ export class BaseRule {
       forbiddenActions: config.forbiddenActions ?? [],
 
       digitCount: config.digitCount ?? 1,            // Количество разрядов (1=однозначные, 2=двузначные и т.д.)
-      combineLevels: config.combineLevels ?? false,  // Комбинировать ли разряды в одном шаге
+      combineLevels: config.combineLevels ?? false,  // Комбинировать уровни (все разряды движутся одновременно)
 
-      ...config
+      onlyAddition: config.onlyAddition ?? false,     // Только сложение
+      onlySubtraction: config.onlySubtraction ?? false, // Только вычитание
+
+      // Дополнительные параметры (могут использоваться специализированными правилами)
+      selectedDigits: config.selectedDigits ?? [],    // Выбранные цифры для генерации
+      includeFive: config.includeFive ?? true,        // Включать пятёрку (для UnifiedSimpleRule)
+
+      ...config  // Все остальные параметры из входного config
     };
   }
 
   /**
-   * Проверяет, является ли состояние валидным
-   * @param {number|number[]} state - Состояние для проверки (число или массив разрядов)
-   * @returns {boolean}
+   * Генерация стартового состояния
+   * Дочерние классы ДОЛЖНЫ переопределить этот метод если нужна своя логика
+   * 
+   * @returns {number|Array} Стартовое состояние (число или массив для многоразрядных)
    */
-  isValidState(state) {
-    const { minState, maxState } = this.config;
-
-    // Один разряд (число)
-    if (typeof state === "number") {
-      return state >= minState && state <= maxState;
+  generateStartState() {
+    // По умолчанию начинаем с 0
+    if (this.config.digitCount === 1) {
+      return 0;
     }
-
-    // Несколько разрядов (массив)
-    if (Array.isArray(state)) {
-      // Каждый разряд должен лежать в допустимом диапазоне
-      return state.every(
-        digit => digit >= minState && digit <= maxState
-      );
-    }
-
-    return false;
+    
+    // Для многоразрядных - массив нулей
+    return new Array(this.config.digitCount).fill(0);
   }
 
   /**
-   * Применяет действие к состоянию
-   * @param {number|number[]} state - Текущее состояние (число или массив разрядов)
-   * @param {number|Object} action - Действие (число для 1 разряда, {position,value} для multi-digit)
-   * @returns {number|number[]} - Новое состояние
+   * Генерация количества шагов в примере
+   * Дочерние классы могут переопределить
+   * 
+   * @returns {number} Количество шагов
    */
-  applyAction(state, action) {
-    // Одноразрядный случай: state число, action число
-    if (typeof state === "number" && typeof action === "number") {
-      return state + action;
+  generateStepsCount() {
+    const { minSteps, maxSteps } = this.config;
+    
+    if (minSteps === maxSteps) {
+      return minSteps;
     }
-
-    // Многоразрядный случай: state массив, action { position, value }
-    if (Array.isArray(state) && typeof action === "object" && action !== null) {
-      const { position, value } = action;
-      const newState = [...state];
-      newState[position] = (newState[position] || 0) + value;
-      return newState;
-    }
-
-    // Смешанный/некорректный формат — не меняем состояние
-    console.error("⚠️ Неподдерживаемый формат applyAction:", { state, action });
-    return state;
+    
+    return minSteps + Math.floor(Math.random() * (maxSteps - minSteps + 1));
   }
 
   /**
-   * Получает доступные действия для текущего состояния.
-   * В базовом классе это просто фильтр по this.config.allowedActions,
-   * но большинство реальных правил (например UnifiedSimpleRule)
-   * переопределяют эту функцию и генерируют физически возможные шаги.
-   *
-   * @param {number|number[]} currentState - Текущее состояние
-   * @param {boolean} isFirstAction - Это первый шаг в примере?
-   * @param {number} position - Для multi-digit: позиция разряда (0=единицы, 1=десятки...)
-   * @returns {Array<number|Object>} - массив шагов
+   * Получить список доступных действий для текущего состояния
+   * ОБЯЗАТЕЛЬНО переопределяется в дочерних классах
+   * 
+   * @param {number|Array} state - Текущее состояние
+   * @param {boolean} isFirst - Первое ли это действие в примере
+   * @param {number} position - Позиция разряда (для многоразрядных)
+   * @returns {Array<number>} Массив доступных действий
    */
-  getAvailableActions(currentState, isFirstAction = false, position = 0) {
+  getAvailableActions(state, isFirst, position = 0) {
+    console.warn("⚠️ BaseRule.getAvailableActions вызван напрямую - это заглушка!");
+    
+    // Заглушка: возвращаем простые действия ±1, ±2, ±3
     const actions = [];
-
-    for (const action of this.config.allowedActions) {
-      if (this.isValidAction(currentState, action, position, isFirstAction)) {
-        actions.push(action);
-      }
+    
+    if (!isFirst && !this.config.onlyAddition) {
+      actions.push(-3, -2, -1);
     }
-
+    
+    if (!this.config.onlySubtraction) {
+      actions.push(1, 2, 3);
+    }
+    
     return actions;
   }
 
   /**
-   * Проверяет, валидно ли действие для текущего состояния:
-   *  - не запрещено явно
-   *  - не выводит состояние за пределы
-   *
-   * Наследники обычно делают свою логику (например физика абакуса),
-   * так что этот метод — fallback для простых случаев.
-   *
-   * @param {number|number[]} currentState
-   * @param {number|Object} action
-   * @param {number} position
-   * @param {boolean} isFirstAction
-   * @returns {boolean}
+   * Применить действие к состоянию
+   * Может быть переопределено в дочерних классах для сложной логики
+   * 
+   * @param {number|Array} state - Текущее состояние
+   * @param {number|Array} action - Действие
+   * @returns {number|Array} Новое состояние
    */
-  isValidAction(currentState, action, position = 0, isFirstAction = false) {
-    // Числовое действие (один разряд)
-    if (typeof action === "number") {
-      // нельзя использовать запрещённые действия
-      if (this.config.forbiddenActions.includes(action)) {
-        return false;
-      }
-
-      // нельзя начинать с минуса, если это методически запрещено
-      if (isFirstAction && action < 0 && this.config.firstActionMustBePositive) {
-        return false;
-      }
-
-      // проверяем новое состояние
-      const newState = this.applyAction(currentState, action);
-      if (!this.isValidState(newState)) {
-        return false;
-      }
-
-      return true;
-    }
-
-    // Объект действия {position,value} для многоразрядных случаев
-    if (typeof action === "object" && action !== null) {
-      if (
-        isFirstAction &&
-        action.value < 0 &&
-        this.config.firstActionMustBePositive
-      ) {
-        return false;
-      }
-
-      const newState = this.applyAction(currentState, action);
-      if (!this.isValidState(newState)) {
-        return false;
-      }
-
-      return true;
-    }
-
-    return false;
-  }
-
-  /**
-   * Генерирует начальное состояние.
-   *
-   * По умолчанию:
-   *  - Если один разряд → 0.
-   *  - Если несколько разрядов → массив нулей [0,0,...].
-   *
-   * РАНЬШЕ здесь была логика "если combineLevels=false, стартовать с [0,0,...,1] (=10,100,1000...)".
-   * Это ломало методику "Просто", где ребёнок ВСЕГДА стартует с нулевой стойки.
-   *
-   * Теперь мы больше не ставим эту единицу. Если какому-то режиму
-   * нужно стартовать не с нуля — он сам переопределит generateStartState().
-   */
-  generateStartState() {
-    const { digitCount } = this.config;
-
-    if (digitCount === 1) {
-      return 0;
-    }
-
-    return new Array(digitCount).fill(0);
-  }
-
-  /**
-   * Генерирует количество шагов.
-   * Возвращает случайное число в [minSteps .. maxSteps].
-   * Наследник может переопределить.
-   */
-  generateStepsCount() {
-    const { minSteps, maxSteps } = this.config;
-    const min = Number.isFinite(minSteps) ? minSteps : 1;
-    const max = Number.isFinite(maxSteps) ? maxSteps : min;
-    if (min === max) return min;
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-  }
-
-  /**
-   * Форматирует действие для отображения в UI.
-   * Для одного разряда → "+2", "-3"
-   * Для multi-digit шагов → берём value.
-   */
-  formatAction(action) {
-    if (typeof action === "number") {
-      return action >= 0 ? `+${action}` : `${action}`;
-    }
-
-    if (typeof action === "object" && action !== null) {
-      const { value } = action;
-      return value >= 0 ? `+${value}` : `${value}`;
-    }
-
-    return String(action);
-  }
-
-  /**
-   * Получить значение конкретного разряда из состояния
-   * (0 = единицы, 1 = десятки и т.д.).
-   */
-  getDigitValue(state, position = 0) {
-    if (typeof state === "number") {
-      // если состояние — одно число, то только разряд 0 (единицы) имеет смысл
-      return position === 0 ? state : 0;
-    }
+  applyAction(state, action) {
     if (Array.isArray(state)) {
-      return state[position] ?? 0;
+      // Многоразрядная логика
+      if (Array.isArray(action)) {
+        return state.map((s, i) => s + (action[i] || 0));
+      } else {
+        // Одно действие на все разряды
+        return state.map(s => s + action);
+      }
     }
-    return 0;
+    
+    // Одноразрядная логика
+    return state + action;
   }
 
   /**
-   * Преобразовать состояние (число или массив разрядов) в одно целое число.
-   * По договорённости массив хранится в формате:
-   *   [единицы, десятки, сотни, ...]
-   * То есть индекс 0 — младший разряд.
+   * Валидация сгенерированного примера
+   * Дочерние классы могут переопределить для специфичных проверок
+   * 
+   * @param {Object} example - Пример для проверки
+   * @param {number|Array} example.start - Стартовое состояние
+   * @param {Array} example.steps - Массив шагов
+   * @param {number|Array} example.answer - Финальный ответ
+   * @returns {boolean} Валиден ли пример
    */
-  stateToNumber(state) {
-    if (typeof state === "number") {
-      return state ?? 0;
+  validateExample(example) {
+    if (!example) {
+      console.warn("⚠️ validateExample: пример пустой");
+      return false;
     }
-    if (Array.isArray(state)) {
-      return state.reduce(
-        (sum, digit, index) => sum + digit * Math.pow(10, index),
-        0
-      );
+
+    if (!example.steps || example.steps.length === 0) {
+      console.warn("⚠️ validateExample: нет шагов");
+      return false;
     }
-    return 0;
+
+    // Базовая проверка: пересчитываем пример и сверяем ответ
+    let currentState = example.start;
+    
+    for (const step of example.steps) {
+      currentState = this.applyAction(currentState, step.action);
+    }
+
+    if (currentState !== example.answer) {
+      console.warn(`⚠️ validateExample: ответ не совпадает. Ожидалось: ${example.answer}, получено: ${currentState}`);
+      return false;
+    }
+
+    // Проверка флагов onlyAddition / onlySubtraction
+    if (this.config.onlyAddition) {
+      const hasNegative = example.steps.some(step => {
+        const action = Array.isArray(step.action) ? step.action[0] : step.action;
+        return action < 0;
+      });
+      
+      if (hasNegative) {
+        console.warn("⚠️ validateExample: найдены отрицательные действия при onlyAddition=true");
+        return false;
+      }
+    }
+
+    if (this.config.onlySubtraction) {
+      const hasPositive = example.steps.some(step => {
+        const action = Array.isArray(step.action) ? step.action[0] : step.action;
+        return action > 0;
+      });
+      
+      if (hasPositive) {
+        console.warn("⚠️ validateExample: найдены положительные действия при onlySubtraction=true");
+        return false;
+      }
+    }
+
+    // Проверка границ состояний
+    currentState = example.start;
+    for (const step of example.steps) {
+      currentState = this.applyAction(currentState, step.action);
+      
+      // Для одноразрядных
+      if (typeof currentState === 'number') {
+        if (currentState < this.config.minState || currentState > this.config.maxState) {
+          console.warn(`⚠️ validateExample: состояние ${currentState} вышло за границы [${this.config.minState}, ${this.config.maxState}]`);
+          return false;
+        }
+      }
+      
+      // Для многоразрядных
+      if (Array.isArray(currentState)) {
+        for (const digit of currentState) {
+          if (digit < this.config.minState || digit > this.config.maxState) {
+            console.warn(`⚠️ validateExample: разряд ${digit} вышел за границы [${this.config.minState}, ${this.config.maxState}]`);
+            return false;
+          }
+        }
+      }
+    }
+
+    return true;
   }
 
   /**
-   * Минимально допустимое финальное число (используется не всеми режимами).
-   * Для 1 разряда это 0.
-   * Для N разрядов: минимальное N-значное число (10, 100, ...).
-   * Т.е. "не ведущие нули", если это важно для режима.
-   * Режим "Просто" это не использует.
+   * Проверка: разрешено ли действие
+   * Вспомогательный метод для дочерних классов
+   * 
+   * @param {number} action - Действие
+   * @returns {boolean} Разрешено ли
    */
-  getMinFinalNumber() {
-    const { digitCount } = this.config;
-    if (digitCount === 1) {
-      return 0;
+  isActionAllowed(action) {
+    const { allowedActions, forbiddenActions, onlyAddition, onlySubtraction } = this.config;
+
+    // Проверка запрещённых действий
+    if (forbiddenActions.length > 0 && forbiddenActions.includes(action)) {
+      return false;
     }
-    return Math.pow(10, digitCount - 1);
+
+    // Проверка разрешённых действий (если список не пустой)
+    if (allowedActions.length > 0 && !allowedActions.includes(action)) {
+      return false;
+    }
+
+    // Проверка флагов only
+    if (onlyAddition && action < 0) {
+      return false;
+    }
+
+    if (onlySubtraction && action > 0) {
+      return false;
+    }
+
+    return true;
   }
 
   /**
-   * Максимально допустимое финальное число (используется не всеми режимами).
-   * Для 1 разряда дефолтно 9.
-   * Для N разрядов: 99, 999, 9999, ...
-   * Режим "Просто" тоже это не использует напрямую.
+   * Получить описание правила для логов
+   * @returns {string} Описание
    */
-  getMaxFinalNumber() {
-    const { digitCount } = this.config;
-    if (digitCount === 1) {
-      return 9;
-    }
-    return Math.pow(10, digitCount) - 1;
+  getDescription() {
+    return `${this.name || 'BaseRule'}: ${this.description}`;
+  }
+
+  /**
+   * Вывести конфигурацию в консоль (для отладки)
+   */
+  debugConfig() {
+    console.log(`📋 Конфигурация правила ${this.name || 'BaseRule'}:`);
+    console.log(JSON.stringify(this.config, null, 2));
   }
 }
