@@ -1,1 +1,103 @@
-1
+<!DOCTYPE html>
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mind Abacus</title>
+
+    <!-- Иконка -->
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+
+    <!-- Шрифты -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600&family=Montserrat:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Стили -->
+    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./ext/trainer-ext.css" />
+  </head>
+
+  <body class="game-screen">
+    <header class="app-header">
+      <div class="app-header__brand">
+        <img
+          src="./assets/logo.png"
+          alt="Mind Abacus logo"
+          class="app-header__logo"
+        />
+
+        <div class="app-header__titles">
+          <h1 id="appTitle" class="app-header__title">
+            <span class="title-main">Mind Abacus</span>
+            <span class="title-sub">Думай быстро. Считай с умом.</span>
+          </h1>
+          <h2 id="appTagline" class="app-header__tagline">
+            Тренажёр ментальной арифметики
+          </h2>
+        </div>
+      </div>
+
+      <!-- Переключатель языков -->
+      <div id="languageSwitcher" class="app-header__languages"></div>
+    </header>
+
+    <main id="app" class="app-main" role="main"></main>
+
+    <footer id="appFooter" class="app-footer">MindWorld School © 2025</footer>
+
+    <!-- Детектор языка -->
+    <script>
+      (function () {
+        const SUPPORTED_LANGS = ["ua", "en", "ru", "es"];
+        const params = new URLSearchParams(window.location.search);
+        let lang = params.get("lang");
+
+        // 1. Проверяем параметр lang в URL
+        if (!SUPPORTED_LANGS.includes(lang)) {
+          // 2. Если нет — пробуем определить по referrer
+          const referrer = document.referrer;
+          if (referrer) {
+            if (referrer.includes("/en/")) {
+              lang = "en";
+            } else if (referrer.includes("/ru/")) {
+              lang = "ru";
+            } else if (referrer.includes("/es/")) {
+              lang = "es";
+            } else if (referrer.includes("mindworldschool.com")) {
+              // Украинская версия на основном домене без префикса
+              lang = "ua";
+            }
+          }
+
+          // 3. Если не определили — пробуем взять из localStorage
+          if (!SUPPORTED_LANGS.includes(lang)) {
+            const saved = localStorage.getItem("mws_lang");
+            if (SUPPORTED_LANGS.includes(saved)) {
+              lang = saved;
+            } else {
+              // 4. Язык по умолчанию
+              lang = "ua";
+            }
+          }
+        }
+
+        // 5. Сохраняем язык
+        localStorage.setItem("mws_lang", lang);
+
+        // 6. Передаём язык в main.js
+        window.APP_LANG = lang;
+
+        // 7. Обновляем lang в <html>
+        const langMap = { ua: "uk", en: "en", ru: "ru", es: "es" };
+        document.documentElement.lang = langMap[lang] || "uk";
+      })();
+    </script>
+
+    <!-- Основной JS -->
+    <script type="module" src="./main.js"></script>
+  </body>
+</html>
