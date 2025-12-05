@@ -1,0 +1,1089 @@
+/* trainer-ext.css — стили для тренажёра */
+:root{
+  --gold: var(--color-muted);
+  --color-correct: #7D733A;
+  --color-incorrect: #E8654B;
+}
+
+/* ========================================
+   Основной layout тренажёра
+   ======================================== */
+.mws-trainer {
+  width: 100%;
+  height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  background: transparent;
+}
+
+/* Левая колонка с примером и ответом */
+.trainer-main {
+  width: 90vw;
+  height: 90vh;
+  max-width: 1400px;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  margin: 0 auto;
+  padding: 4vh 5vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Мобильная версия — экран на всю ширину */
+@media (max-width: 768px) {
+  .mws-trainer {
+    grid-template-columns: 1fr;
+    height: 100vh;
+  }
+
+  .trainer-main {
+    width: 100vw;
+    height: 92vh;
+    border-radius: 0;
+    padding: 6vh 4vw;
+  }
+}
+
+/* Режим столбик (по умолчанию) */
+.trainer-main--column {
+  flex-direction: row;
+  align-items: center;
+  gap: 40px;
+}
+
+/* Режим в строку */
+.trainer-main--inline {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 30px;
+}
+
+@media (max-width: 900px){
+  .mws-trainer { 
+    grid-template-columns: 1fr; 
+  }
+  
+  .trainer-main,
+  .trainer-main--column {
+    flex-direction: column;
+    gap: 30px;
+  }
+  
+  .answer-section {
+    flex: 1 1 auto;
+    width: 100%;
+    max-width: 400px;
+  }
+}
+
+/* ========================================
+   Область примера
+   ======================================== */
+#area-example {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+  width: 100%;
+}
+
+/* В режиме столбик - занимает оставшееся место */
+.trainer-main--column #area-example {
+  flex: 1;
+  min-height: 200px;
+  max-height: calc(100vh - 250px);
+}
+
+/* В режиме в строку - компактнее */
+.trainer-main--inline #area-example {
+  min-height: 200px;
+  width: 100%;
+}
+
+.example-view {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+}
+
+.example--column {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  height: 100%;
+}
+
+.example--inline {
+  font-size: clamp(20px, 3vw, 32px);
+  line-height: 1.4;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+  text-align: center;
+}
+
+.example__line {
+  font-family: "Baloo 2", system-ui, sans-serif;
+  color: var(--gold);
+  font-weight: 700;
+  text-align: center;
+  /* font-size controlled by adaptExampleFontSize() in JS */
+  line-height: 1.2;
+  width: auto;
+  min-width: 80px;
+  padding: 0 20px;
+}
+
+.example__line--inline {
+  word-wrap: break-word;
+}
+
+/* ========================================
+   Секция ответа
+   ======================================== */
+.answer-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+/* В режиме столбик - фиксированная ширина */
+.trainer-main--column .answer-section {
+  flex: 0 0 320px;
+}
+
+/* В режиме в строку - на всю ширину */
+.trainer-main--inline .answer-section {
+  flex: 1 1 auto;
+  max-width: 500px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.answer-label {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-text);
+  font-family: "Baloo 2", cursive;
+  text-align: center;
+}
+
+.answer-section #answer-input {
+  width: 100%;
+  height: 80px;
+  font-size: 52px;
+  font-weight: 700;
+  padding: 0 20px;
+  border-radius: var(--radius-medium);
+  border: 3px solid rgba(125, 115, 58, 0.3);
+  text-align: center;
+  transition: var(--transition);
+  background: #fff;
+  line-height: 80px;
+  font-family: "Baloo 2", system-ui, sans-serif;
+  color: var(--color-text);
+}
+
+.answer-section #answer-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 4px rgba(255, 124, 0, 0.15);
+}
+
+.answer-section #answer-input::placeholder {
+  color: rgba(125, 115, 58, 0.3);
+  font-size: 32px;
+}
+
+.answer-section #btn-submit {
+  width: 100%;
+  padding: 18px 32px;
+  font-size: 20px;
+  border-radius: 999px;
+  font-weight: 700;
+}
+
+/* ========================================
+   Правая панель управления
+   ======================================== */
+#panel-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: calc(100vh - 170px);
+  overflow-y: auto;
+  position: relative;
+  z-index: 10;
+}
+
+.panel-card {
+  background: var(--color-surface);
+  border-radius: var(--radius-medium);
+  box-shadow: var(--shadow-soft);
+  padding: 12px 16px;
+}
+
+.panel-card--compact {
+  padding: 0;
+}
+
+/* ========================================
+   Капсула результатов с счетчиком
+   ======================================== */
+.results-capsule-extended {
+  background: var(--color-surface);
+  border-radius: var(--radius-medium);
+  box-shadow: var(--shadow-soft);
+  overflow: hidden;
+}
+
+.results-capsule-extended__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: rgba(255, 124, 0, 0.08);
+  border-bottom: 1px solid rgba(255, 124, 0, 0.15);
+}
+
+.results-capsule-extended__label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.results-capsule-extended__counter {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-primary);
+  font-family: "Baloo 2", cursive;
+}
+
+/* ========================================
+   Капсула результатов
+   ======================================== */
+.results-capsule {
+  display: flex;
+  align-items: stretch;
+}
+
+.results-capsule__side {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 12px;
+  gap: 6px;
+}
+
+.results-capsule__side--correct {
+  background: #EDEBDD;
+}
+
+.results-capsule__side--incorrect {
+  background: #FBE5E0;
+}
+
+.results-capsule__icon {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.results-capsule__side--correct .results-capsule__icon {
+  color: var(--color-correct);
+}
+
+.results-capsule__side--incorrect .results-capsule__icon {
+  color: var(--color-incorrect);
+}
+
+.results-capsule__value {
+  font-size: 28px;
+  font-weight: 700;
+  font-family: "Baloo 2", cursive;
+}
+
+.results-capsule__side--correct .results-capsule__value {
+  color: var(--color-correct);
+}
+
+.results-capsule__side--incorrect .results-capsule__value {
+  color: var(--color-incorrect);
+}
+
+.results-capsule__divider {
+  width: 2px;
+  background: rgba(0, 0, 0, 0.1);
+}
+
+/* ========================================
+   Прогресс-бар
+   ======================================== */
+.progress-container {
+  background: var(--color-surface);
+  border-radius: var(--radius-medium);
+  box-shadow: var(--shadow-soft);
+  padding: 12px 16px;
+}
+
+.progress-bar {
+  height: 10px;
+  background: rgba(125, 115, 58, 0.1);
+  border-radius: 999px;
+  overflow: hidden;
+  display: flex;
+  margin-bottom: 10px;
+}
+
+.progress-bar__correct {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-correct), #86efac);
+  transition: width 0.4s ease;
+}
+
+.progress-bar__incorrect {
+  height: 100%;
+  background: linear-gradient(90deg, #fca5a5, var(--color-incorrect));
+  transition: width 0.4s ease;
+}
+
+.progress-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  gap: 12px;
+}
+
+.progress-label__correct {
+  color: var(--color-correct);
+  font-weight: 600;
+}
+
+.progress-label__incorrect {
+  color: var(--color-incorrect);
+  font-weight: 600;
+}
+
+.progress-label strong {
+  font-weight: 700;
+}
+
+/* ========================================
+   Капсула таймера
+   ======================================== */
+.timer-capsule {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: linear-gradient(135deg, #fb923c, #f97316);
+  border-radius: var(--radius-medium);
+  padding: 14px 20px;
+  box-shadow: 0 8px 20px rgba(249, 115, 22, 0.3);
+}
+
+.timer-icon {
+  color: #fff;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.timer-capsule #timer {
+  font-size: 24px;
+  font-weight: 700;
+  color: #fff;
+  font-family: "Baloo 2", cursive;
+  letter-spacing: 0.05em;
+}
+
+/* ========================================
+   Плавающий абакус (SVG версия)
+   ======================================== */
+.abacus-wrapper {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 1000;
+  background: #f8f6f0;
+  border-radius: var(--radius-medium);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  padding: 16px;
+  max-width: 90vw;
+  max-height: 80vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  will-change: opacity, transform;
+  transition: box-shadow 0.3s ease;
+  -webkit-overflow-scrolling: touch;
+}
+
+.abacus-wrapper.visible {
+  display: block;
+  animation: slideInFromBottom 0.4s ease-out;
+}
+
+.abacus-wrapper:hover {
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+}
+
+@keyframes slideInFromBottom {
+  from {
+    opacity: 0;
+    transform: translateY(100px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Заголовок абакуса с кнопкой закрытия */
+.abacus-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid rgba(192, 166, 127, 0.4);
+}
+
+.abacus-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-muted);
+  font-family: "Baloo 2", cursive;
+}
+
+.abacus-close-btn {
+  background: transparent;
+  border: none;
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--color-muted);
+  padding: 0;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: var(--transition);
+}
+
+.abacus-close-btn:hover {
+  background: rgba(192, 166, 127, 0.3);
+  transform: scale(1.1);
+}
+
+.abacus-close-btn:active {
+  transform: scale(0.95);
+}
+
+/* Внутренний контейнер для SVG */
+#floating-abacus-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* SVG элемент абакуса */
+#abacus-svg {
+  display: block;
+  margin: 0 auto;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+  will-change: transform;
+}
+
+/* Курсор для бусин при наведении */
+#abacus-svg .bead {
+  cursor: grab;
+}
+
+#abacus-svg .bead:active {
+  cursor: grabbing;
+}
+
+/* Предотвращаем выделение текста внутри абакуса */
+.abacus-wrapper * {
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* Кастомный scrollbar */
+.abacus-wrapper::-webkit-scrollbar {
+  width: 6px;
+}
+
+.abacus-wrapper::-webkit-scrollbar-track {
+  background: rgba(192, 166, 127, 0.1);
+  border-radius: 3px;
+}
+
+.abacus-wrapper::-webkit-scrollbar-thumb {
+  background: rgba(192, 166, 127, 0.4);
+  border-radius: 3px;
+}
+
+.abacus-wrapper::-webkit-scrollbar-thumb:hover {
+  background: rgba(192, 166, 127, 0.6);
+}
+
+/* ========================================
+   LeoModal - Поп-арты с результатом
+   ======================================== */
+.leo-modal {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 9999;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.leo-modal--open {
+  display: flex;
+  opacity: 1;
+}
+
+.leo-modal__card {
+  background: var(--color-primary);
+  border-radius: var(--radius-large);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  padding: 32px 40px;
+  max-width: 480px;
+  min-width: 320px;
+  margin: 20px;
+  text-align: center;
+  color: #fff;
+  animation: modalBounce 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes modalBounce {
+  0% {
+    transform: scale(0.7);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.leo-modal__icon {
+  font-size: 64px;
+  margin-bottom: 16px;
+  animation: iconPulse 1s ease-in-out infinite;
+}
+
+@keyframes iconPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+.leo-modal__title {
+  margin: 0 0 12px;
+  font-size: 28px;
+  font-weight: 700;
+  font-family: "Baloo 2", cursive;
+  color: #fff;
+}
+
+.leo-modal__text {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+/* ========================================
+   Адаптив для мобильных устройств
+   ======================================== */
+@media (max-width: 900px) {
+  .mws-trainer {
+    grid-template-columns: 1fr;
+  }
+  
+  .trainer-main {
+    flex-direction: column;
+    padding: 32px 24px;
+    min-height: 400px;
+    gap: 30px;
+  }
+  
+  .answer-section {
+    flex: 1 1 auto;
+    width: 100%;
+    max-width: 400px;
+  }
+  
+  .abacus-wrapper {
+    right: 10px;
+    bottom: 10px;
+    left: 10px;
+    padding: 12px;
+    max-width: none;
+  }
+  
+  #abacus-svg {
+    transform: scale(0.85);
+    transform-origin: center;
+  }
+}
+
+@media (max-width: 640px) {
+  .trainer-main {
+    padding: 24px 20px;
+    min-height: 350px;
+  }
+
+  #area-example {
+    min-height: 200px;
+  }
+
+  .example__line {
+    /* font-size controlled by adaptExampleFontSize() in JS */
+  }
+
+  .answer-label {
+    font-size: 24px;
+  }
+  
+  .answer-section #answer-input {
+    height: 70px;
+    font-size: 44px;
+    line-height: 70px;
+  }
+  
+  .answer-section #btn-submit {
+    padding: 16px 24px;
+    font-size: 18px;
+  }
+  
+  .results-capsule__value {
+    font-size: 28px;
+  }
+  
+  .timer-capsule #timer {
+    font-size: 24px;
+  }
+  
+  .leo-modal__card {
+    padding: 24px 28px;
+    min-width: 280px;
+  }
+  
+  .leo-modal__icon {
+    font-size: 48px;
+  }
+  
+  .leo-modal__title {
+    font-size: 24px;
+  }
+  
+  .leo-modal__text {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .abacus-wrapper {
+    right: 5px;
+    bottom: 5px;
+    left: 5px;
+    padding: 10px;
+    max-height: 70vh;
+  }
+  
+  #abacus-svg {
+    transform: scale(0.7);
+    transform-origin: center;
+  }
+  
+  .abacus-title {
+    font-size: 16px;
+  }
+  
+  .abacus-close-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 24px;
+  }
+}
+
+@media (max-width: 360px) {
+  #abacus-svg {
+    transform: scale(0.6);
+  }
+}
+
+@media (max-width: 768px) {
+  #abacus-svg {
+    transform: scale(0.85);
+    transform-origin: center;
+  }
+}
+
+@media (max-height: 600px) and (orientation: landscape) {
+  .abacus-wrapper {
+    max-height: 85vh;
+    bottom: 5px;
+  }
+  
+  #abacus-svg {
+    transform: scale(0.65);
+  }
+}
+
+/* ========================================
+   Белый экран тренировки (финальная версия)
+   ======================================== */
+
+:root {
+  --trainer-w: 90vw;
+  --trainer-h: 90svh;
+  --panel-w: 360px;
+}
+
+/* Контейнер тренировки */
+.mws-trainer {
+  width: 100%;
+  min-height: calc(100vh - 140px);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--panel-w);
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  background: transparent;
+}
+
+/* Главная белая карточка */
+.trainer-main {
+  width: min(100%, var(--trainer-w));
+  min-height: var(--trainer-h);
+  height: auto;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  padding: clamp(24px, 4vh, 48px) clamp(24px, 5vw, 64px);
+  margin-inline: auto;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  transition: all 0.3s ease;
+}
+
+/* В режиме столбик растягиваем содержимое по высоте */
+.trainer-main--column {
+  align-items: stretch;
+}
+
+/* Левая область с примерами */
+.trainer-main--column #area-example {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  min-height: auto;
+  max-height: none;
+}
+
+/* ====== Мобильная адаптация ====== */
+@media (max-width: 900px) {
+  .mws-trainer {
+    grid-template-columns: 1fr;
+    min-height: calc(100vh - 100px);
+    align-items: stretch;
+  }
+
+  .trainer-main {
+    width: 100vw;
+    min-height: 92svh;
+    flex-direction: column;
+    border-radius: 12px;
+    padding: clamp(16px, 6vh, 40px) clamp(16px, 5vw, 32px);
+  }
+
+  #area-example {
+    flex: 1 1 auto;
+  }
+
+  .answer-section {
+    flex: 0 0 auto;
+    width: 100%;
+    max-width: 420px;
+    margin-inline: auto;
+  }
+}
+
+/* =========================================================
+   PATCH v5 — компактный белый блок и адаптив под 15 шагов
+   ========================================================= */
+
+body.game-screen .mws-trainer{
+  align-items: start !important;
+  min-height: calc(100vh - 140px) !important;
+  gap: 24px !important;
+}
+
+body.game-screen .trainer-main{
+  width: min(100%, 90vw) !important;
+  min-height: 88svh !important;
+  margin-inline: auto !important;
+  align-items: flex-start !important;
+  gap: clamp(20px, 4vw, 48px) !important;
+  padding: clamp(20px, 3vh, 48px) 8px !important;
+}
+
+body.game-screen .trainer-main--column #area-example{
+  flex: 1 1 auto !important;
+  height: auto !important;
+  min-height: auto !important;
+  max-height: none !important;
+  overflow: hidden !important;
+  justify-content: flex-start !important;
+  padding: 0 3px !important;
+}
+
+body.game-screen .example--column{
+  display: grid !important;
+  grid-auto-rows: 1fr !important;
+  align-content: start !important;
+  justify-items: center !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-height: calc(90vh - 220px) !important;
+  overflow: visible !important; 
+  padding: 0 !important; 
+}
+
+body.game-screen .example__line{
+  font-family: "Baloo 2", system-ui, sans-serif !important;
+  color: var(--color-muted) !important;
+  font-weight: 700 !important;
+  text-align: center !important;
+  line-height: 1.15 !important;
+   font-size: var(--example-font-size, clamp(24px, 4vw, 56px)) !important;
+}
+
+body.game-screen .example--inline{
+  display: flex !important;
+  flex-wrap: wrap !important;
+  justify-content: center !important;
+  gap: 12px !important;
+  max-width: 90% !important;
+  font-size: var(--example-font-size, clamp(22px, 3vw, 42px)) !important;
+  text-align: center !important;
+  word-break: keep-all !important;
+  overflow-wrap: anywhere !important;
+}
+
+body.game-screen .answer-section{
+  width: clamp(240px, 30vw, 340px) !important;
+  align-items: center !important;
+  gap: 14px !important;
+}
+
+body.game-screen .answer-section #answer-input{
+  width: 100% !important;
+  height: clamp(60px, 8vh, 80px) !important;
+  font-size: clamp(28px, 4vw, 52px) !important;
+  border-radius: 12px !important;
+  text-align: center !important;
+}
+
+body.game-screen .screen__header{
+  margin: 0 !important;
+  padding: 0 !important;
+  gap: 4px !important;
+}
+
+@media (max-width: 900px){
+  body.game-screen .mws-trainer{
+    grid-template-columns: 1fr !important;
+    align-items: start !important;
+    min-height: auto !important;
+  }
+  body.game-screen .trainer-main{
+    width: 100vw !important;
+    min-height: 92svh !important;
+    border-radius: 12px !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    padding: clamp(16px, 5vh, 40px) clamp(16px, 5vw, 32px) !important;
+  }
+  body.game-screen .example--column{
+    max-height: none !important;
+    height: auto !important;
+  }
+  body.game-screen .example__line{
+    font-size: clamp(24px, 6vw, 36px) !important;
+  }
+  body.game-screen .answer-section{
+    width: 90% !important;
+    max-width: 420px !important;
+  }
+}
+
+/* =========================================================
+   PATCH v6 — выравнивание правой панели и фиксация скролла
+   ========================================================= */
+
+body.game-screen .mws-trainer {
+  align-items: flex-start !important;
+  justify-content: center !important;
+  height: auto !important;
+  min-height: calc(100vh - 140px) !important;
+  overflow: hidden !important;
+  gap: 24px !important;
+}
+
+body.game-screen .trainer-main {
+  align-self: flex-start !important;
+  height: auto !important;
+  min-height: 88svh !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: flex-start !important;
+  justify-content: center !important;
+  padding-top: clamp(24px, 3vh, 48px) !important;
+}
+
+body.game-screen #panel-controls {
+  align-self: flex-start !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-start !important;
+  gap: 16px !important;
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+body.game-screen #panel-controls > * {
+  flex-shrink: 0 !important;
+  width: 100% !important;
+}
+
+body.game-screen .results-capsule-extended,
+body.game-screen .progress-container,
+body.game-screen .timer-capsule {
+  flex: 0 0 auto !important;
+}
+
+@media (max-width: 900px) {
+  body.game-screen .mws-trainer {
+    grid-template-columns: 1fr !important;
+    align-items: flex-start !important;
+    overflow: visible !important;
+  }
+
+  body.game-screen #panel-controls {
+    order: 2 !important;
+    width: 100% !important;
+    margin-top: 20px !important;
+  }
+}
+/* ========================================
+   Блок ответа в правой панели
+   ======================================== */
+.answer-section-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
+  background: var(--color-surface);
+  border-radius: var(--radius-medium);
+  box-shadow: var(--shadow-soft);
+  padding: 16px;
+}
+
+.answer-section-panel .answer-label {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-text);
+  font-family: "Baloo 2", cursive;
+  text-align: center;
+}
+
+.answer-section-panel #answer-input {
+  width: 100%;
+  height: 70px;
+  font-size: 44px;
+  font-weight: 700;
+  padding: 0 16px;
+  border-radius: var(--radius-medium);
+  border: 3px solid rgba(125, 115, 58, 0.3);
+  text-align: center;
+  transition: var(--transition);
+  background: #fff;
+  line-height: 70px;
+  font-family: "Baloo 2", system-ui, sans-serif;
+  color: var(--color-text);
+}
+
+.answer-section-panel #answer-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 4px rgba(255, 124, 0, 0.15);
+}
+
+.answer-section-panel #answer-input::placeholder {
+  color: rgba(125, 115, 58, 0.3);
+  font-size: 28px;
+}
+
+.answer-section-panel #btn-submit {
+  width: 100%;
+  padding: 14px 24px;
+  font-size: 18px;
+  border-radius: 999px;
+  font-weight: 700;
+}
+
+/* Адаптив для мобильных */
+@media (max-width: 900px) {
+  .answer-section-panel {
+    order: -1; /* Поднять вверх на мобильных */
+    margin-bottom: 16px;
+  }
+}
