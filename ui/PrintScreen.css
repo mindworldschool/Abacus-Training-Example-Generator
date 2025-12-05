@@ -1,76 +1,467 @@
-const ROUTE_ORDER = ["settings", "confirmation", "game", "results"];
+// ui/PrintScreen.js
+// Экран генератора печатных заданий
 
-export function createScreenShell({ title, description, className = "" }) {
-  const section = document.createElement("section");
-  section.className = `screen ${className}`.trim();
+import { PrintGenerator } from "../print/PrintGenerator.js";
+import { PrintFormatter } from "../print/PrintFormatter.js";
 
-  const header = document.createElement("div");
-  header.className = "screen__header";
+/**
+ * Главный экран генератора для печати
+ * 
+ * СТРУКТУРА:
+ * 1. Секция настроек (количество, разрядность)
+ * 2. Секция выбора блоков (Просто, Братья, Друзі, Мікс)
+ * 3. Секция результата (превью + кнопки)
+ */
+export function renderPrintScreen(container) {
+  console.log("🖨️ Рендеринг экрана генератора печати");
 
-  const heading = document.createElement("h2");
-  heading.className = "screen__title";
-  heading.textContent = title;
+  container.innerHTML = '';
 
-  const paragraph = document.createElement("p");
-  paragraph.className = "screen__description";
-  paragraph.textContent = description;
+  const screen = document.createElement('div');
+  screen.className = 'print-screen';
 
-  header.append(heading, paragraph);
+  // === HTML СТРУКТУРА ===
+  screen.innerHTML = `
+    <!-- ЗАГОЛОВОК -->
+    <header class="print-header">
+      <h1>📄 Генератор завдань для друку</h1>
+      <p class="print-subtitle">Створіть набір прикладів для тренування на абакусі</p>
+    </header>
 
-  const body = document.createElement("div");
-  body.className = "screen__body";
+    <!-- НАСТРОЙКИ -->
+    <section class="print-settings">
+      <h2>⚙️ Налаштування</h2>
 
-  section.append(header, body);
+      <div class="settings-grid">
+        <!-- Количество примеров -->
+        <div class="setting-item">
+          <label for="examples-count">Кількість прикладів:</label>
+          <select id="examples-count" class="setting-select">
+            <option value="10">10</option>
+            <option value="20" selected>20</option>
+            <option value="30">30</option>
+            <option value="40">40</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+          </select>
+        </div>
 
-  return {
-    section,
-    body,
-    heading,
-    paragraph
-  };
-}
+        <!-- Количество действий -->
+        <div class="setting-item">
+          <label for="actions-count">Кількість дій в прикладі:</label>
+          <select id="actions-count" class="setting-select">
+            <option value="3">3</option>
+            <option value="5" selected>5</option>
+            <option value="7">7</option>
+            <option value="10">10</option>
+            <option value="15">15</option>
+            <option value="20">20</option>
+          </select>
+        </div>
 
-export function createButton({ label, variant = "primary", onClick }) {
-  const button = document.createElement("button");
-  button.type = "button";
-  button.className = `btn btn--${variant}`;
-  button.textContent = label;
-  if (onClick) {
-    button.addEventListener("click", onClick);
+        <!-- Разрядность -->
+        <div class="setting-item">
+          <label for="digit-count">Розрядність:</label>
+          <select id="digit-count" class="setting-select">
+            <option value="1" selected>1 розряд</option>
+            <option value="2">2 розряди</option>
+            <option value="3">3 розряди</option>
+            <option value="4">4 розряди</option>
+            <option value="5">5 розрядів</option>
+          </select>
+        </div>
+
+        <!-- Название листа -->
+        <div class="setting-item setting-item--full">
+          <label for="worksheet-title">Назва завдання (необов'язково):</label>
+          <input type="text" id="worksheet-title" class="setting-input" placeholder="Наприклад: Завдання для тренування">
+        </div>
+
+        <!-- Комментарий -->
+        <div class="setting-item setting-item--full">
+          <label for="worksheet-comment">Коментар (необов'язково):</label>
+          <input type="text" id="worksheet-comment" class="setting-input" placeholder="Наприклад: Домашнє завдання на тиждень">
+        </div>
+      </div>
+
+      <!-- БЛОКИ -->
+      <div class="blocks-section">
+        <h3>Виберіть блоки та цифри</h3>
+
+        <!-- БЛОК: ПРОСТО -->
+        <div class="block" id="block-simple">
+          <div class="block-header">
+            <h4>📘 ПРОСТО (1-9)</h4>
+            <button class="btn-select-all" data-block="simple">Вибрати все</button>
+          </div>
+          <div class="digits-grid" id="simple-digits">
+            ${[1, 2, 3, 4, 5, 6, 7, 8, 9].map(d => 
+              `<button class="digit-btn" data-block="simple" data-digit="${d}">${d}</button>`
+            ).join('')}
+          </div>
+          <div class="block-options">
+            <label>
+              <input type="checkbox" id="simple-only-add" data-block="simple">
+              Тільки додавання
+            </label>
+            <label>
+              <input type="checkbox" id="simple-only-sub" data-block="simple">
+              Тільки віднімання
+            </label>
+          </div>
+        </div>
+
+        <!-- БЛОК: БРАТЬЯ -->
+        <div class="block" id="block-brothers">
+          <div class="block-header">
+            <h4>👥 БРАТИ (формули 5)</h4>
+            <button class="btn-select-all" data-block="brothers">Вибрати все</button>
+          </div>
+          <div class="digits-grid" id="brothers-digits">
+            ${[4, 3, 2, 1].map(d => 
+              `<button class="digit-btn" data-block="brothers" data-digit="${d}">${d}</button>`
+            ).join('')}
+          </div>
+          <div class="block-options">
+            <label>
+              <input type="checkbox" id="brothers-only-add" data-block="brothers">
+              Тільки додавання
+            </label>
+            <label>
+              <input type="checkbox" id="brothers-only-sub" data-block="brothers">
+              Тільки віднімання
+            </label>
+          </div>
+        </div>
+
+        <!-- БЛОК: ДРУЗІ -->
+        <div class="block" id="block-friends">
+          <div class="block-header">
+            <h4>🤝 ДРУЗІ (формули 10)</h4>
+            <button class="btn-select-all" data-block="friends">Вибрати все</button>
+          </div>
+          <div class="digits-grid" id="friends-digits">
+            ${[9, 8, 7, 6, 5, 4, 3, 2, 1].map(d => 
+              `<button class="digit-btn" data-block="friends" data-digit="${d}">${d}</button>`
+            ).join('')}
+          </div>
+          <div class="block-options">
+            <label>
+              <input type="checkbox" id="friends-only-add" data-block="friends">
+              Тільки додавання
+            </label>
+            <label>
+              <input type="checkbox" id="friends-only-sub" data-block="friends">
+              Тільки віднімання
+            </label>
+          </div>
+          <div class="block-note">
+            <small>⚠️ Вимагає мінімум 2 розряди</small>
+          </div>
+        </div>
+
+        <!-- БЛОК: МІКС -->
+        <div class="block" id="block-mix">
+          <div class="block-header">
+            <h4>🔄 БРАТИ І ДРУЗІ (мікс)</h4>
+            <button class="btn-select-all" data-block="mix">Вибрати все</button>
+          </div>
+          <div class="digits-grid" id="mix-digits">
+            ${[6, 7, 8, 9].map(d => 
+              `<button class="digit-btn" data-block="mix" data-digit="${d}">${d}</button>`
+            ).join('')}
+          </div>
+          <div class="block-options">
+            <label>
+              <input type="checkbox" id="mix-only-add" data-block="mix">
+              Тільки додавання
+            </label>
+            <label>
+              <input type="checkbox" id="mix-only-sub" data-block="mix">
+              Тільки віднімання
+            </label>
+          </div>
+          <div class="block-note">
+            <small>⚠️ Вимагає мінімум 2 розряди</small>
+          </div>
+        </div>
+      </div>
+
+      <!-- Кнопка генерации -->
+      <div class="generate-section">
+        <button id="generate-btn" class="btn-primary btn-large">
+          🎲 Згенерувати приклади
+        </button>
+      </div>
+    </section>
+
+    <!-- РЕЗУЛЬТАТ -->
+    <section class="print-result" id="result-section" style="display: none;">
+      <h2>📊 Результат</h2>
+
+      <!-- Статистика -->
+      <div id="statistics-container"></div>
+
+      <!-- Превью -->
+      <div id="worksheet-preview"></div>
+
+      <!-- Управление -->
+      <div class="print-controls">
+        <div class="controls-left">
+          <label class="checkbox-label">
+            <input type="checkbox" id="show-answers">
+            <span>Показати відповіді</span>
+          </label>
+        </div>
+
+        <div class="controls-right">
+          <button id="print-btn" class="btn-primary">
+            🖨️ Друкувати
+          </button>
+          <button id="new-btn" class="btn-secondary">
+            🔄 Нові приклади
+          </button>
+        </div>
+      </div>
+    </section>
+  `;
+
+  container.appendChild(screen);
+
+  // === ЛОГИКА ===
+
+  // Хранилище текущих примеров
+  let currentExamples = null;
+
+  // Обработчики выбора цифр
+  setupDigitSelection();
+
+  // Обработчики кнопок "Вибрати все"
+  setupSelectAllButtons();
+
+  // Обработчик генерации
+  document.getElementById('generate-btn').addEventListener('click', handleGenerate);
+
+  // Обработчик "Нові приклади"
+  document.getElementById('new-btn').addEventListener('click', handleGenerate);
+
+  // Обработчик показа/скрытия ответов
+  document.getElementById('show-answers').addEventListener('change', handleToggleAnswers);
+
+  // Обработчик печати
+  document.getElementById('print-btn').addEventListener('click', handlePrint);
+
+  // Валидация при изменении разрядности
+  document.getElementById('digit-count').addEventListener('change', validateDigitCount);
+
+  /**
+   * Настройка выбора цифр
+   */
+  function setupDigitSelection() {
+    document.querySelectorAll('.digit-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        btn.classList.toggle('active');
+        updateBlockState(btn.dataset.block);
+      });
+    });
   }
-  return button;
-}
 
-export function createStepIndicator(activeRoute, translate) {
-  const list = document.createElement("ol");
-  list.className = "step-indicator";
+  /**
+   * Настройка кнопок "Вибрати все"
+   */
+  function setupSelectAllButtons() {
+    document.querySelectorAll('.btn-select-all').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const blockName = btn.dataset.block;
+        const buttons = document.querySelectorAll(`.digit-btn[data-block="${blockName}"]`);
+        const allActive = Array.from(buttons).every(b => b.classList.contains('active'));
 
-  ROUTE_ORDER.forEach((route, index) => {
-    const item = document.createElement("li");
-    item.className = "step-indicator__item";
-    item.dataset.route = route;
-    if (route === activeRoute) {
-      item.classList.add("step-indicator__item--active");
+        buttons.forEach(b => {
+          if (allActive) {
+            b.classList.remove('active');
+          } else {
+            b.classList.add('active');
+          }
+        });
+
+        updateBlockState(blockName);
+      });
+    });
+  }
+
+  /**
+   * Обновление состояния блока (подсветка)
+   */
+  function updateBlockState(blockName) {
+    const block = document.getElementById(`block-${blockName}`);
+    const selectedDigits = getSelectedDigits(blockName);
+
+    if (selectedDigits.length > 0) {
+      block.classList.add('block--active');
+    } else {
+      block.classList.remove('block--active');
     }
-    if (ROUTE_ORDER.indexOf(activeRoute) > index) {
-      item.classList.add("step-indicator__item--complete");
+  }
+
+  /**
+   * Получить выбранные цифры блока
+   */
+  function getSelectedDigits(blockName) {
+    const buttons = document.querySelectorAll(`.digit-btn[data-block="${blockName}"].active`);
+    return Array.from(buttons).map(btn => parseInt(btn.dataset.digit));
+  }
+
+  /**
+   * Валидация разрядности
+   */
+  function validateDigitCount() {
+    const digitCount = parseInt(document.getElementById('digit-count').value);
+    const friendsNote = document.querySelector('#block-friends .block-note');
+    const mixNote = document.querySelector('#block-mix .block-note');
+
+    if (digitCount < 2) {
+      friendsNote.style.display = 'block';
+      mixNote.style.display = 'block';
+      friendsNote.innerHTML = '<small>⚠️ Для "Друзі" потрібно мінімум 2 розряди</small>';
+      mixNote.innerHTML = '<small>⚠️ Для "Мікс" потрібно мінімум 2 розряди</small>';
+    } else {
+      friendsNote.style.display = 'none';
+      mixNote.style.display = 'none';
     }
-    const badge = document.createElement("span");
-    badge.className = "step-indicator__badge";
-    badge.textContent = index + 1;
+  }
 
-    const label = document.createElement("span");
-    label.className = "step-indicator__label";
-    label.textContent = translate(`header.steps.${route}`);
+  /**
+   * Собрать конфигурацию из UI
+   */
+  function collectConfig() {
+    const config = {
+      examplesCount: parseInt(document.getElementById('examples-count').value),
+      actionsCount: parseInt(document.getElementById('actions-count').value),
+      digitCount: parseInt(document.getElementById('digit-count').value),
+      title: document.getElementById('worksheet-title').value || "Завдання для тренування на абакусі",
+      comment: document.getElementById('worksheet-comment').value || "",
+      blocks: {
+        simple: {
+          digits: getSelectedDigits('simple'),
+          onlyAddition: document.getElementById('simple-only-add').checked,
+          onlySubtraction: document.getElementById('simple-only-sub').checked
+        },
+        brothers: {
+          digits: getSelectedDigits('brothers'),
+          onlyAddition: document.getElementById('brothers-only-add').checked,
+          onlySubtraction: document.getElementById('brothers-only-sub').checked
+        },
+        friends: {
+          digits: getSelectedDigits('friends'),
+          onlyAddition: document.getElementById('friends-only-add').checked,
+          onlySubtraction: document.getElementById('friends-only-sub').checked
+        },
+        mix: {
+          digits: getSelectedDigits('mix'),
+          onlyAddition: document.getElementById('mix-only-add').checked,
+          onlySubtraction: document.getElementById('mix-only-sub').checked
+        }
+      }
+    };
 
-    item.append(badge, label);
-    list.appendChild(item);
-  });
+    return config;
+  }
 
-  return list;
-}
+  /**
+   * Обработчик генерации
+   */
+  function handleGenerate() {
+    console.log("🎲 Генерация примеров...");
 
-export function formatOptionLabel(options, value) {
-  const match = options.find((option) => option.value === value);
-  return match ? match.label : value;
+    const btn = document.getElementById('generate-btn');
+    btn.disabled = true;
+    btn.textContent = '⏳ Генерація...';
+
+    try {
+      // Собираем конфигурацию
+      const config = collectConfig();
+
+      // Создаем генератор
+      const generator = new PrintGenerator(config);
+
+      // Валидация
+      generator.validate();
+
+      // Генерация
+      currentExamples = generator.generate();
+
+      // Проверка что что-то сгенерировалось
+      if (!currentExamples || currentExamples.length === 0) {
+        throw new Error("Не вдалося згенерувати жодного прикладу");
+      }
+
+      // Отображение результата
+      displayResult(currentExamples, config);
+
+      // Показываем секцию результата
+      document.getElementById('result-section').style.display = 'block';
+
+      // Прокрутка к результату
+      document.getElementById('result-section').scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'start' 
+      });
+
+      console.log(`✅ Сгенерировано ${currentExamples.length} примеров`);
+
+    } catch (error) {
+      console.error("❌ Ошибка генерации:", error);
+      alert(`Помилка: ${error.message}`);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = '🎲 Згенерувати приклади';
+    }
+  }
+
+  /**
+   * Отображение результата
+   */
+  function displayResult(examples, config) {
+    // Статистика
+    const statsHtml = PrintFormatter.formatStatisticsBlock(examples);
+    document.getElementById('statistics-container').innerHTML = statsHtml;
+
+    // Превью
+    const showAnswers = document.getElementById('show-answers').checked;
+    const worksheetHtml = PrintFormatter.formatToTable(examples, {
+      showAnswers: showAnswers,
+      title: config.title,
+      comment: config.comment,
+      columns: 10,
+      rows: Math.ceil(examples.length / 10)
+    });
+
+    document.getElementById('worksheet-preview').innerHTML = worksheetHtml;
+  }
+
+  /**
+   * Обработчик переключения показа ответов
+   */
+  function handleToggleAnswers(e) {
+    const showAnswers = e.target.checked;
+
+    // Переключаем видимость ответов
+    document.querySelectorAll('.answer-value').forEach(el => {
+      if (showAnswers) {
+        el.classList.remove('answer-value--hidden');
+      } else {
+        el.classList.add('answer-value--hidden');
+      }
+    });
+  }
+
+  /**
+   * Обработчик печати
+   */
+  function handlePrint() {
+    console.log("🖨️ Печать...");
+    window.print();
+  }
+
+  console.log("✅ Экран генератора готов");
 }
