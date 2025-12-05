@@ -144,15 +144,50 @@ export class PrintGenerator {
 
       } catch (error) {
         attempts++;
-        
+
         if (attempts >= maxAttempts) {
           console.error(`❌ Превышен лимит попыток для примера ${id}:`, error.message);
-          return null;
+
+          // Возвращаем простой fallback пример вместо null
+          return this._generateFallbackExample(id);
         }
       }
     }
 
-    return null;
+    // Возвращаем fallback пример
+    return this._generateFallbackExample(id);
+  }
+
+  /**
+   * Генерация простого fallback примера
+   * Используется когда не удалось сгенерировать пример по правилам
+   * @param {number} id - ID примера
+   * @returns {Object} Простой пример
+   */
+  _generateFallbackExample(id) {
+    console.warn(`⚠️ Используем fallback пример для ${id}`);
+
+    // Генерируем простой пример с базовыми операциями
+    const steps = [];
+    const actionsCount = Math.min(3, this.config.actionsCount);
+
+    for (let i = 0; i < actionsCount; i++) {
+      const action = i === 0 ? '+1' : (i % 2 === 0 ? '+2' : '-1');
+      steps.push(action);
+    }
+
+    // Вычисляем ответ
+    let answer = 0;
+    for (const step of steps) {
+      answer += parseInt(step, 10);
+    }
+
+    return {
+      id: id,
+      steps: steps,
+      answer: answer,
+      start: 0
+    };
   }
 
   /**

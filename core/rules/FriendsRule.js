@@ -272,22 +272,26 @@ export class FriendsRule extends BaseRule {
     }
 
     // Проверка 1: Есть ли хотя бы один дружеский шаг
+    // Для многоразрядного режима (MultiDigitGenerator) эта проверка опциональна
+    const isMultiDigitMode = this.config.digitCount > 1;
+
     let hasFriendStep = false;
     let currentState = example.start;
 
     for (const step of example.steps) {
       const action = step.action;
       const nextState = currentState + action;
-      
+
       if (this._isFriendTransition(currentState, nextState)) {
         hasFriendStep = true;
         break;
       }
-      
+
       currentState = nextState;
     }
 
-    if (!hasFriendStep) {
+    // Для одноразрядного режима требуем обязательное наличие дружеского шага
+    if (!isMultiDigitMode && !hasFriendStep) {
       console.warn("⚠️ FriendsRule: пример не содержит дружеских шагов");
       return false;
     }

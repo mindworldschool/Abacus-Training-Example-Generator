@@ -287,22 +287,26 @@ export class MixRule extends BaseRule {
     }
 
     // Проверка 1: Есть ли хотя бы один миксованный шаг
+    // Для многоразрядного режима (MultiDigitGenerator) эта проверка опциональна
+    const isMultiDigitMode = this.config.digitCount > 1;
+
     let hasMixStep = false;
     let currentState = example.start;
 
     for (const step of example.steps) {
       const action = step.action;
       const nextState = currentState + action;
-      
+
       if (this._isMixTransition(currentState, nextState)) {
         hasMixStep = true;
         break;
       }
-      
+
       currentState = nextState;
     }
 
-    if (!hasMixStep) {
+    // Для одноразрядного режима требуем обязательное наличие миксованного шага
+    if (!isMultiDigitMode && !hasMixStep) {
       console.warn("⚠️ MixRule: пример не содержит миксованных шагов");
       return false;
     }

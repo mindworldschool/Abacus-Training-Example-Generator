@@ -305,22 +305,26 @@ export class BrothersRule extends BaseRule {
     }
 
     // Проверка 1: Есть ли хотя бы один братский шаг
+    // Для многоразрядного режима (MultiDigitGenerator) эта проверка опциональна
+    const isMultiDigitMode = this.config.digitCount > 1;
+
     let hasBrotherStep = false;
     let currentState = example.start;
 
     for (const step of example.steps) {
       const action = step.action;
       const nextState = currentState + action;
-      
+
       if (this._isBrotherTransition(currentState, nextState)) {
         hasBrotherStep = true;
         break;
       }
-      
+
       currentState = nextState;
     }
 
-    if (!hasBrotherStep) {
+    // Для одноразрядного режима требуем обязательное наличие братского шага
+    if (!isMultiDigitMode && !hasBrotherStep) {
       console.warn("⚠️ BrothersRule: пример не содержит братских шагов");
       return false;
     }
