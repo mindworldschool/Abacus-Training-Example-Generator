@@ -81,7 +81,7 @@ function createSettingsSection(t) {
     t.settings.examplesCount,
     20,
     1,
-    100
+    1000  // Максимум 1000 примеров
   ));
 
   // Количество действий
@@ -491,6 +491,20 @@ function handleGenerate(t) {
     // === 3. ПОКАЗЫВАЕМ ИНДИКАТОР ЗАГРУЗКИ ===
     const generateBtn = document.getElementById('generateBtn');
     const originalText = generateBtn.textContent;
+
+    // Предупреждение для больших объемов
+    if (settings.examplesCount > 100) {
+      const confirmed = confirm(
+        `Ви збираєтесь згенерувати ${settings.examplesCount} прикладів.\n\n` +
+        `Це може зайняти 10-30 секунд.\n` +
+        `Також PDF файл буде містити ${Math.ceil(settings.examplesCount / 100)} сторінок.\n\n` +
+        `Продовжити?`
+      );
+      if (!confirmed) {
+        return;
+      }
+    }
+
     generateBtn.textContent = t.buttons.generating;
     generateBtn.disabled = true;
 
@@ -503,7 +517,13 @@ function handleGenerate(t) {
           digitCount: settings.digitCount,
           blocks: settings.blocks,
           combineLevels: settings.combineLevels,
-          verbose: true
+          verbose: true,
+          // Callback для отображения прогресса (для больших объемов)
+          onProgress: (progress) => {
+            if (settings.examplesCount > 100) {
+              generateBtn.textContent = `${t.buttons.generating} ${progress.percent}% (${progress.current}/${progress.total})`;
+            }
+          }
         });
 
         const examples = generator.generate();

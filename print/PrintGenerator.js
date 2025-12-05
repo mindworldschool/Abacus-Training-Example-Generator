@@ -28,24 +28,27 @@ export class PrintGenerator {
     this.config = {
       // Количество примеров для генерации
       examplesCount: config.examplesCount || 20,
-      
+
       // Количество действий в каждом примере
       actionsCount: config.actionsCount || 5,
-      
+
       // Разрядность (1-9)
       digitCount: config.digitCount || 1,
-      
+
       // Активные блоки
       blocks: config.blocks || {},
-      
+
       // Комбинирование разрядов (для многоразрядных)
       combineLevels: config.combineLevels || false,
-      
+
       // Максимум попыток на один пример
       maxAttemptsPerExample: config.maxAttemptsPerExample || 100,
-      
+
       // Логировать процесс
-      verbose: config.verbose ?? false
+      verbose: config.verbose ?? false,
+
+      // Callback для отображения прогресса
+      onProgress: config.onProgress || null
     };
 
     console.log("🖨️ PrintGenerator создан:", {
@@ -79,12 +82,21 @@ export class PrintGenerator {
     for (let i = 0; i < this.config.examplesCount; i++) {
       try {
         const example = this._generateSingleExample(i + 1);
-        
+
         if (example) {
           examples.push(example);
-          
+
           if (this.config.verbose && (i + 1) % 10 === 0) {
             console.log(`✅ Сгенерировано ${i + 1}/${this.config.examplesCount} примеров`);
+          }
+
+          // Вызываем callback прогресса
+          if (this.config.onProgress && (i + 1) % 10 === 0) {
+            this.config.onProgress({
+              current: i + 1,
+              total: this.config.examplesCount,
+              percent: Math.round(((i + 1) / this.config.examplesCount) * 100)
+            });
           }
         } else {
           errors.push({ id: i + 1, error: "Не удалось сгенерировать пример" });
