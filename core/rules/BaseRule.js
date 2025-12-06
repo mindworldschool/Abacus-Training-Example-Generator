@@ -186,24 +186,30 @@ export class BaseRule {
     }
 
     // Проверка границ состояний
-    currentState = example.start;
-    for (const step of example.steps) {
-      currentState = this.applyAction(currentState, step.action);
-      
-      // Для одноразрядных
-      if (typeof currentState === 'number') {
-        if (currentState < this.config.minState || currentState > this.config.maxState) {
-          console.warn(`⚠️ validateExample: состояние ${currentState} вышло за границы [${this.config.minState}, ${this.config.maxState}]`);
-          return false;
-        }
-      }
-      
-      // Для многоразрядных
-      if (Array.isArray(currentState)) {
-        for (const digit of currentState) {
-          if (digit < this.config.minState || digit > this.config.maxState) {
-            console.warn(`⚠️ validateExample: разряд ${digit} вышел за границы [${this.config.minState}, ${this.config.maxState}]`);
+    // Для многоразрядного режима (digitCount > 1) эта проверка отключается,
+    // так как MultiDigitGenerator работает с большими числами (например 123)
+    const isMultiDigitMode = this.config.digitCount > 1;
+
+    if (!isMultiDigitMode) {
+      currentState = example.start;
+      for (const step of example.steps) {
+        currentState = this.applyAction(currentState, step.action);
+
+        // Для одноразрядных
+        if (typeof currentState === 'number') {
+          if (currentState < this.config.minState || currentState > this.config.maxState) {
+            console.warn(`⚠️ validateExample: состояние ${currentState} вышло за границы [${this.config.minState}, ${this.config.maxState}]`);
             return false;
+          }
+        }
+
+        // Для многоразрядных векторов
+        if (Array.isArray(currentState)) {
+          for (const digit of currentState) {
+            if (digit < this.config.minState || digit > this.config.maxState) {
+              console.warn(`⚠️ validateExample: разряд ${digit} вышел за границы [${this.config.minState}, ${this.config.maxState}]`);
+              return false;
+            }
           }
         }
       }
