@@ -202,7 +202,7 @@ export class UnifiedSimpleRule extends BaseRule {
 
   /**
    * Валидация примера
-   * 
+   *
    * @param {Object} example - Пример для проверки
    * @returns {boolean} Валиден ли пример
    */
@@ -212,20 +212,26 @@ export class UnifiedSimpleRule extends BaseRule {
       return false;
     }
 
-    // Дополнительная проверка: физическая возможность каждого шага
-    let currentState = example.start;
+    const isMultiDigitMode = this.config.digitCount > 1;
 
-    for (const step of example.steps) {
-      const action = step.action;
+    // Дополнительная проверка физической возможности ТОЛЬКО для одноразрядного режима
+    // Для многоразрядного режима эта проверка не применяется,
+    // так как MultiDigitGenerator работает с большими числами (например +123)
+    if (!isMultiDigitMode) {
+      let currentState = example.start;
 
-      if (!this.isPhysicallyPossible(currentState, action)) {
-        console.warn(
-          `⚠️ UnifiedSimpleRule: действие ${action} физически невозможно из состояния ${currentState}`
-        );
-        return false;
+      for (const step of example.steps) {
+        const action = step.action;
+
+        if (!this.isPhysicallyPossible(currentState, action)) {
+          console.warn(
+            `⚠️ UnifiedSimpleRule: действие ${action} физически невозможно из состояния ${currentState}`
+          );
+          return false;
+        }
+
+        currentState = this.applyAction(currentState, action);
       }
-
-      currentState = this.applyAction(currentState, action);
     }
 
     return true;
