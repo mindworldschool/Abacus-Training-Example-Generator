@@ -208,44 +208,48 @@ function createBlocksSection(t) {
   h3.textContent = t.blocks.title;
   section.appendChild(h3);
 
-  // Блок "Просто"
+  // Блок "Просто" - активен за замовчуванням
   section.appendChild(createBlock(
     'simple',
     t.blocks.simple,
     [1, 2, 3, 4, 5, 6, 7, 8, 9],
-    [1, 2, 3, 4, 5],
+    [1, 2, 3, 4, 5],  // За замовчуванням активні
     t,
-    false
+    false,
+    false  // НЕ показувати опції "тільки додавання/віднімання"
   ));
 
-  // Блок "Братья"
+  // Блок "Братья" - НЕ активен за замовчуванням
   section.appendChild(createBlock(
     'brothers',
     t.blocks.brothers,
     [1, 2, 3, 4],
-    [4],
+    [],  // За замовчуванням НЕ активні
     t,
-    false
+    false,
+    true  // Показувати опції "тільки додавання/віднімання"
   ));
 
-  // Блок "Друзі"
+  // Блок "Друзі" - НЕ активен за замовчуванням
   section.appendChild(createBlock(
     'friends',
     t.blocks.friends,
     [1, 2, 3, 4, 5, 6, 7, 8, 9],
-    [9],
+    [],  // За замовчуванням НЕ активні
     t,
-    true
+    true,
+    true  // Показувати опції "тільки додавання/віднімання"
   ));
 
-  // Блок "Мікс"
+  // Блок "Мікс" - НЕ активен за замовчуванням
   section.appendChild(createBlock(
     'mix',
     t.blocks.mix,
     [6, 7, 8, 9],
-    [6, 7, 8, 9],
+    [],  // За замовчуванням НЕ активні
     t,
-    true
+    true,
+    true  // Показувати опції "тільки додавання/віднімання"
   ));
 
   return section;
@@ -253,8 +257,9 @@ function createBlocksSection(t) {
 
 /**
  * Создание одного блока выбора
+ * @param {boolean} showOnlyOptions - Показувати опції "тільки додавання/віднімання"
  */
-function createBlock(blockId, title, availableDigits, defaultDigits, t, requiresMultipleDigits) {
+function createBlock(blockId, title, availableDigits, defaultDigits, t, requiresMultipleDigits, showOnlyOptions = true) {
   const block = document.createElement('div');
   block.className = 'block';
   block.dataset.blockId = blockId;
@@ -299,28 +304,31 @@ function createBlock(blockId, title, availableDigits, defaultDigits, t, requires
   block.appendChild(digitsGrid);
 
   // Опции блока (только сложение / только вычитание)
-  const options = document.createElement('div');
-  options.className = 'block-options';
+  // Показываем ТІЛЬКИ якщо showOnlyOptions = true
+  if (showOnlyOptions) {
+    const options = document.createElement('div');
+    options.className = 'block-options';
 
-  const onlyAddLabel = document.createElement('label');
-  const onlyAddCheck = document.createElement('input');
-  onlyAddCheck.type = 'checkbox';
-  onlyAddCheck.dataset.blockId = blockId;
-  onlyAddCheck.dataset.option = 'onlyAddition';
-  onlyAddLabel.appendChild(onlyAddCheck);
-  onlyAddLabel.appendChild(document.createTextNode(' ' + t.blockOptions.onlyAddition));
-  options.appendChild(onlyAddLabel);
+    const onlyAddLabel = document.createElement('label');
+    const onlyAddCheck = document.createElement('input');
+    onlyAddCheck.type = 'checkbox';
+    onlyAddCheck.dataset.blockId = blockId;
+    onlyAddCheck.dataset.option = 'onlyAddition';
+    onlyAddLabel.appendChild(onlyAddCheck);
+    onlyAddLabel.appendChild(document.createTextNode(' ' + t.blockOptions.onlyAddition));
+    options.appendChild(onlyAddLabel);
 
-  const onlySubLabel = document.createElement('label');
-  const onlySubCheck = document.createElement('input');
-  onlySubCheck.type = 'checkbox';
-  onlySubCheck.dataset.blockId = blockId;
-  onlySubCheck.dataset.option = 'onlySubtraction';
-  onlySubLabel.appendChild(onlySubCheck);
-  onlySubLabel.appendChild(document.createTextNode(' ' + t.blockOptions.onlySubtraction));
-  options.appendChild(onlySubLabel);
+    const onlySubLabel = document.createElement('label');
+    const onlySubCheck = document.createElement('input');
+    onlySubCheck.type = 'checkbox';
+    onlySubCheck.dataset.blockId = blockId;
+    onlySubCheck.dataset.option = 'onlySubtraction';
+    onlySubLabel.appendChild(onlySubCheck);
+    onlySubLabel.appendChild(document.createTextNode(' ' + t.blockOptions.onlySubtraction));
+    options.appendChild(onlySubLabel);
 
-  block.appendChild(options);
+    block.appendChild(options);
+  }
 
   // Предупреждение для блоков, требующих 2+ разрядов
   if (requiresMultipleDigits) {
@@ -628,8 +636,12 @@ function collectSettings() {
     const activeButtons = block.querySelectorAll('.digit-btn.active');
     const digits = Array.from(activeButtons).map(btn => parseInt(btn.dataset.digit, 10));
 
-    const onlyAddition = block.querySelector(`input[data-option="onlyAddition"]`).checked;
-    const onlySubtraction = block.querySelector(`input[data-option="onlySubtraction"]`).checked;
+    // Перевіряємо чи існують чекбокси (для "simple" їх може не бути)
+    const onlyAdditionEl = block.querySelector(`input[data-option="onlyAddition"]`);
+    const onlySubtractionEl = block.querySelector(`input[data-option="onlySubtraction"]`);
+
+    const onlyAddition = onlyAdditionEl ? onlyAdditionEl.checked : false;
+    const onlySubtraction = onlySubtractionEl ? onlySubtractionEl.checked : false;
 
     blocks[blockId] = {
       digits: digits,
