@@ -296,14 +296,17 @@ export class FriendsRule extends BaseRule {
       return false;
     }
 
-    // Проверка 2: Все промежуточные состояния в диапазоне 0-99
-    currentState = example.start;
-    for (const step of example.steps) {
-      currentState = currentState + step.action;
-      
-      if (currentState < 0 || currentState > 99) {
-        console.warn(`⚠️ FriendsRule: состояние вышло за границы: ${currentState}`);
-        return false;
+    // Проверка 2: Все промежуточные состояния в допустимом диапазоне
+    // Для многоразрядного режима диапазон расширяется
+    if (!isMultiDigitMode) {
+      currentState = example.start;
+      for (const step of example.steps) {
+        currentState = currentState + step.action;
+
+        if (currentState < 0 || currentState > 99) {
+          console.warn(`⚠️ FriendsRule: состояние вышло за границы: ${currentState}`);
+          return false;
+        }
       }
     }
 
